@@ -4,47 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NJSLA Grade 3 Mastery Suite | NJ Assessment Prep</title>
+    <title>NJSLA Grade 3 Mastery Suite</title>
     <meta name="description"
-        content="Official-style NJSLA Grade 3 Math, ELA and Chinese practice. Real timing, real question counts, mistake notebook.">
+        content="NJSLA Grade 3 Math, ELA and Chinese practice. Real timing, real question counts, multi-user, mistake notebook.">
     <link rel="stylesheet" href="index.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div id="app">
-
-        <!-- Top Navigation Bar -->
-        <nav class="navbar">
-            <div class="logo">NJ Mastery Suite</div>
-            <div style="display:flex;align-items:center;gap:.75rem;">
-                <div id="timer-display">60:00</div>
-            </div>
-            <div class="nav-buttons">
-                <button class="btn btn-secondary" onclick="app.showWrongBook()">Mistake Notebook</button>
-                <button class="btn btn-primary" onclick="app.renderHome()">Home</button>
-            </div>
-        </nav>
-
-        <!-- TestNav-style Toolbar (shown only during exams) -->
-        <div class="testnav-toolbar" id="testnav-toolbar">
-            <button class="toolbar-btn">🔍 Zoom</button>
-            <button class="toolbar-btn">✏️ Highlighter</button>
-            <button class="toolbar-btn">📏 Line Reader</button>
-            <button class="toolbar-btn">❌ Eliminator</button>
-            <span class="section-label">Section: Mathematics</span>
-        </div>
-
-        <!-- Main Content -->
-        <main class="container" id="main-container">
-            <!-- Rendered by app.js -->
-        </main>
-
-        <footer>
-            <p>NJSLA Mastery Suite · 2025 NJ Student Learning Standards · Educational Use Only</p>
-        </footer>
-
+        <!-- Navbar, toolbar, main, footer all rendered by app.js after login -->
     </div>
     <script src="math_questions.js"></script>
     <script src="questions.js"></script>
