@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NJSLA Grade 3 Prep | Mastery Suite</title>
+    <meta name="description"
+        content="NJSLA Grade 3 Student Learning Assessments Practice. NJ ELA, Math & Grade 2 Chinese prep.">
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar">
+            <div class="logo">NJ Mastery Suite</div>
+            <div id="timer-display"
+                style="display: none; font-family: monospace; font-size: 1.5rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.2);">
+                60:00
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="app.showWrongBook()">Mistake Notebook</button>
+                <button class="btn btn-primary" onclick="app.renderHome()">Home</button>
+            </div>
+        </nav>
+
+        <main class="container" id="main-container">
+            <!-- App Content will be rendered here by app.js -->
+        </main>
+
+        <footer>
+            <div style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-main)">NJSLA Assessment & Excellence
+            </div>
+            <p>© 2026 Designed for Educational Excellence. NJ State Standard Electronic Simulation.</p>
+        </footer>
+    </div>
+    <script src="math_questions.js"></script>
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
