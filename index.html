@@ -4,24 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NJSLA Grade 3 Prep | Mastery Suite</title>
+    <title>NJSLA Grade 3 Mastery Suite | NJ Assessment Prep</title>
     <meta name="description"
-        content="NJSLA Grade 3 Student Learning Assessments Practice. NJ ELA, Math & Grade 2 Chinese prep.">
+        content="Official-style NJSLA Grade 3 Math, ELA and Chinese practice. Real timing, real question counts, mistake notebook.">
     <link rel="stylesheet" href="index.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div id="app">
+
+        <!-- Top Navigation Bar -->
         <nav class="navbar">
             <div class="logo">NJ Mastery Suite</div>
-            <div id="timer-display"
-                style="display: none; font-family: monospace; font-size: 1.5rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.2);">
-                60:00
+            <div style="display:flex;align-items:center;gap:.75rem;">
+                <div id="timer-display">60:00</div>
             </div>
             <div class="nav-buttons">
                 <button class="btn btn-secondary" onclick="app.showWrongBook()">Mistake Notebook</button>
@@ -29,15 +27,24 @@
             </div>
         </nav>
 
+        <!-- TestNav-style Toolbar (shown only during exams) -->
+        <div class="testnav-toolbar" id="testnav-toolbar">
+            <button class="toolbar-btn">🔍 Zoom</button>
+            <button class="toolbar-btn">✏️ Highlighter</button>
+            <button class="toolbar-btn">📏 Line Reader</button>
+            <button class="toolbar-btn">❌ Eliminator</button>
+            <span class="section-label">Section: Mathematics</span>
+        </div>
+
+        <!-- Main Content -->
         <main class="container" id="main-container">
-            <!-- App Content will be rendered here by app.js -->
+            <!-- Rendered by app.js -->
         </main>
 
         <footer>
-            <div style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text-main)">NJSLA Assessment & Excellence
-            </div>
-            <p>© 2026 Designed for Educational Excellence. NJ State Standard Electronic Simulation.</p>
+            <p>NJSLA Mastery Suite · 2025 NJ Student Learning Standards · Educational Use Only</p>
         </footer>
+
     </div>
     <script src="math_questions.js"></script>
     <script src="questions.js"></script>

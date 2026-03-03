@@ -1,5 +1,5 @@
-/** NJ Mastery Suite – Engine only.
- *  DB is provided by math_questions.js + questions.js (loaded before this file in index.html).
+/** NJ Mastery Suite – NJSLA TestNav-Style Engine
+ *  DB loaded from math_questions.js + questions.js before this file.
  */
 
 const TIMING = { math: 3600, ela: 4500, chinese: 1200 };
@@ -15,32 +15,42 @@ let state = {
     timerInterval: null
 };
 
+const subjectNames = { math: 'Mathematics', ela: 'English Language Arts', chinese: 'Chinese (Grade 2)' };
+
 const app = {
     init() { this.renderHome(); },
 
     renderHome() {
         this.stopTimer();
         document.getElementById('timer-display').style.display = 'none';
-        const sets = { math: '6 Sets · 14 Questions · 60 Min', ela: '6 Sets · 23 Questions · 75 Min', chinese: '3 Sets · Practice Mode' };
+        document.getElementById('testnav-toolbar')?.style && (document.getElementById('testnav-toolbar').style.display = 'none');
+        const wbCount = state.wrongBook.length;
         document.getElementById('main-container').innerHTML = `
         <div class="animate-in">
-            <header style="text-align:center;padding:3rem 0;">
-                <h1 style="font-size:2.8rem;margin-bottom:.5rem;">NJSLA Mastery Suite</h1>
-                <p style="color:var(--text-muted);">2025 Official Format · Real Timing · True NJSLA Difficulty</p>
-            </header>
+            <div class="home-header">
+                <h1>NJSLA Mastery Suite</h1>
+                <p>New Jersey Student Learning Assessments — 2025 Official Format Simulation</p>
+            </div>
             <div class="grid">
                 <div class="card" onclick="app.selectSubject('math')">
-                    <span class="card-icon">📐</span><h3>Grade 3 Math</h3><p>${sets.math}</p>
+                    <span class="card-icon">📐</span>
+                    <h3>Mathematics</h3>
+                    <p>Grade 3 · 6 Sets · 14 Questions · 60 Min</p>
                 </div>
                 <div class="card" onclick="app.selectSubject('ela')">
-                    <span class="card-icon">📖</span><h3>Grade 3 ELA</h3><p>${sets.ela}</p>
+                    <span class="card-icon">📖</span>
+                    <h3>ELA</h3>
+                    <p>Grade 3 · 6 Sets · 23 Questions · 75 Min</p>
                 </div>
                 <div class="card" onclick="app.selectSubject('chinese')">
-                    <span class="card-icon">🏮</span><h3>Grade 2 Chinese</h3><p>${sets.chinese}</p>
+                    <span class="card-icon">🏮</span>
+                    <h3>Chinese</h3>
+                    <p>Grade 2 · 3 Sets · Practice Mode</p>
                 </div>
                 <div class="card" onclick="app.showWrongBook()">
-                    <span class="card-icon">📓</span><h3>Mistake Notebook</h3>
-                    <p>${state.wrongBook.length} items to review</p>
+                    <span class="card-icon">📓</span>
+                    <h3>Mistake Notebook</h3>
+                    <p>${wbCount} ${wbCount === 1 ? 'item' : 'items'} to review</p>
                 </div>
             </div>
         </div>`;
@@ -53,17 +63,20 @@ const app = {
         const mins = { math: 60, ela: 75, chinese: 20 }[state.subject];
         document.getElementById('main-container').innerHTML = `
         <div class="animate-in">
-            <div class="test-header">
-                <h2>Choose a Set — ${state.subject.toUpperCase()}</h2>
+            <div class="section-header">
+                <h2>${subjectNames[state.subject]} — Select a Unit</h2>
                 <button class="btn btn-secondary" onclick="app.renderHome()">← Home</button>
             </div>
             <div class="grid">
                 ${sets.map((s, i) => `
                 <div class="card" onclick="app.startTest('${s}','practice')">
-                    <h3>Set ${i + 1}</h3><p>Practice Mode (instant feedback)</p>
+                    <h3>Unit ${i + 1} — Practice</h3>
+                    <p>Instant feedback · No timer</p>
                 </div>
-                <div class="card" style="border-color:var(--primary);" onclick="app.startTest('${s}','exam')">
-                    <h3>Set ${i + 1} EXAM</h3><p>⏱ ${mins} Minute Timer</p>
+                <div class="card" onclick="app.startTest('${s}','exam')">
+                    <span style="display:inline-block;background:#003087;color:#fff;font-size:.7rem;padding:.15rem .5rem;border-radius:3px;margin-bottom:.5rem;">TIMED EXAM</span>
+                    <h3>Unit ${i + 1} — Exam Mode</h3>
+                    <p>⏱ ${mins} minutes · Submit to score</p>
                 </div>`).join('')}
             </div>
         </div>`;
@@ -73,7 +86,11 @@ const app = {
         state.set = set; state.mode = mode;
         state.currentIdx = 0; state.answers = [];
         state.timeLeft = TIMING[state.subject] || 3600;
-        if (mode === 'exam') this.startTimer();
+        if (mode === 'exam') {
+            this.startTimer();
+            const tb = document.getElementById('testnav-toolbar');
+            if (tb) { tb.style.display = 'flex'; tb.querySelector('.section-label').textContent = `Section: ${subjectNames[state.subject]}`; }
+        }
         this.renderQ();
     },
 
@@ -84,72 +101,120 @@ const app = {
         state.timerInterval = setInterval(() => {
             state.timeLeft--;
             const m = Math.floor(state.timeLeft / 60), s = state.timeLeft % 60;
-            el.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
-            el.style.color = state.timeLeft < 300 ? '#ef4444' : '#f97316';
-            if (state.timeLeft <= 0) { clearInterval(state.timerInterval); alert('Time is up!'); this.finishTest(); }
+            el.textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+            el.className = state.timeLeft < 120 ? 'critical' : state.timeLeft < 300 ? 'warning' : '';
+            if (state.timeLeft <= 0) { clearInterval(state.timerInterval); this.finishTest(); }
         }, 1000);
     },
 
     stopTimer() {
         if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
-        document.getElementById('timer-display').style.display = 'none';
+        const el = document.getElementById('timer-display');
+        if (el) el.style.display = 'none';
+        const tb = document.getElementById('testnav-toolbar');
+        if (tb) tb.style.display = 'none';
     },
 
     renderQ() {
         const qs = DB[state.subject][state.set];
         const q = qs[state.currentIdx];
-        const prog = (state.currentIdx / qs.length) * 100;
+        const isExam = state.mode === 'exam';
         const isLast = state.currentIdx === qs.length - 1;
+        const savedAnswer = state.answers[state.currentIdx];
+        const prog = ((state.currentIdx) / qs.length) * 100;
+        const setIdx = Object.keys(DB[state.subject]).indexOf(state.set) + 1;
+
         document.getElementById('main-container').innerHTML = `
         <div class="animate-in">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
-                <span style="color:var(--text-muted);font-size:.9rem;">Q ${state.currentIdx + 1} / ${qs.length}</span>
-                <span style="color:var(--primary);font-size:.8rem;">${q.tag}</span>
-            </div>
-            <div class="progress-container"><div class="progress-bar" style="width:${prog}%"></div></div>
-            <div class="question-box">
+            <div class="progress-wrap"><div class="progress-fill" style="width:${prog}%"></div></div>
+            <div class="question-panel">
+                <div class="question-number">
+                    ${isExam ? '' : `<span style="background:#003087;color:#fff;padding:.1rem .5rem;border-radius:3px;font-size:.75rem;margin-right:.5rem;">PRACTICE</span>`}
+                    ${subjectNames[state.subject]} &nbsp;·&nbsp; Unit ${setIdx} &nbsp;·&nbsp; Question ${state.currentIdx + 1} of ${qs.length}
+                </div>
                 <div class="question-text">${q.q}</div>
                 <div class="options">
-                    ${q.a.map((a, i) => `
-                    <div class="option" id="opt-${i}" onclick="app.pick(${i})">
-                        <div class="badge">${String.fromCharCode(65 + i)}</div><span>${a}</span>
-                    </div>`).join('')}
+                    ${q.a.map((a, i) => {
+            let cls = '';
+            if (!isExam && savedAnswer !== undefined) {
+                if (i === q.c) cls = 'correct';
+                else if (i === savedAnswer && savedAnswer !== q.c) cls = 'wrong';
+            } else if (isExam && savedAnswer === i) cls = 'selected';
+            return `<div class="option ${cls}" id="opt-${i}" onclick="app.pick(${i})">
+                            <div class="option-letter">${String.fromCharCode(65 + i)}</div>
+                            <span>${a}</span>
+                        </div>`;
+        }).join('')}
                 </div>
-            </div>
-            <div style="text-align:right;margin-top:1rem;">
-                ${state.mode === 'practice' ? `<button class="btn btn-secondary" onclick="app.nextQ()">Next →</button>` : ''}
-                ${isLast && state.mode === 'exam' ? `<button class="btn btn-primary" onclick="app.finishTest()">✔ SUBMIT TEST</button>` : ''}
+                ${(!isExam && savedAnswer !== undefined) ? `
+                <div class="feedback-box ${savedAnswer === q.c ? 'correct' : 'wrong'}">
+                    <strong>${savedAnswer === q.c ? '✓ Correct!' : '✗ Incorrect'}</strong> — ${q.exp}
+                </div>` : ''}
             </div>
         </div>`;
+
+        // Render footer nav bar
+        this.renderNavFooter(qs, isExam, isLast);
+    },
+
+    renderNavFooter(qs, isExam, isLast) {
+        // Remove old footer if present
+        const oldFoot = document.getElementById('exam-footer');
+        if (oldFoot) oldFoot.remove();
+        const foot = document.createElement('div');
+        foot.id = 'exam-footer';
+        foot.className = 'nav-footer';
+        foot.innerHTML = `
+            <button class="btn btn-secondary" onclick="app.goBack()" ${state.currentIdx === 0 ? 'disabled style="opacity:.4;cursor:default;"' : ''}>← Back</button>
+            <span class="nav-footer-info">Question ${state.currentIdx + 1} of ${qs.length}</span>
+            <div style="display:flex;gap:.5rem;">
+                ${isExam && isLast ? `<button class="btn btn-primary" onclick="app.finishTest()">Review &amp; Submit →</button>` : ''}
+                ${isExam && !isLast ? `<button class="btn btn-primary" onclick="app.goForward()">Next →</button>` : ''}
+                ${!isExam ? `<button class="btn btn-primary" onclick="app.nextQ()">Next →</button>` : ''}
+            </div>`;
+        document.getElementById('app').appendChild(foot);
     },
 
     pick(idx) {
         const qs = DB[state.subject][state.set];
         const q = qs[state.currentIdx];
+        if (!state.mode) return;
+
         if (state.mode === 'practice') {
-            document.querySelectorAll('.option').forEach(o => o.onclick = null);
-            document.getElementById(`opt-${q.c}`).classList.add('correct');
-            if (idx !== q.c) { document.getElementById(`opt-${idx}`).classList.add('wrong'); this.save(q); }
-            const fb = document.createElement('div');
-            fb.style.cssText = `margin-top:1rem;padding:.75rem 1rem;border-radius:.5rem;background:rgba(${idx === q.c ? '16,185,129' : '239,68,68'},.1);color:${idx === q.c ? 'var(--accent-success)' : 'var(--accent-error)'}`;
-            fb.innerHTML = `<strong>${idx === q.c ? '✓ Correct!' : '✗ Incorrect'}</strong> — ${q.exp}`;
-            document.querySelector('.question-box').appendChild(fb);
+            if (state.answers[state.currentIdx] !== undefined) return; // already answered
+            state.answers[state.currentIdx] = idx;
+            if (idx !== q.c) this.save(q);
+            this.renderQ(); // re-render to show feedback
         } else {
+            // exam: just mark selection
             state.answers[state.currentIdx] = idx;
             document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-            document.getElementById(`opt-${idx}`).classList.add('selected');
-            if (state.currentIdx < qs.length - 1) setTimeout(() => { state.currentIdx++; this.renderQ(); }, 350);
+            const el = document.getElementById(`opt-${idx}`);
+            if (el) { el.classList.add('selected'); el.querySelector('.option-letter').style.cssText = 'border-color:#0066cc;background:#0066cc;color:#fff;'; }
         }
+    },
+
+    goBack() {
+        if (state.currentIdx > 0) { state.currentIdx--; this.renderQ(); }
+    },
+
+    goForward() {
+        const qs = DB[state.subject][state.set];
+        if (state.currentIdx < qs.length - 1) { state.currentIdx++; this.renderQ(); }
     },
 
     nextQ() {
         const qs = DB[state.subject][state.set];
+        const foot = document.getElementById('exam-footer');
+        if (foot) foot.remove();
         if (state.currentIdx < qs.length - 1) { state.currentIdx++; this.renderQ(); }
-        else this.renderHome();
+        else { this.stopTimer(); this.renderHome(); }
     },
 
     finishTest() {
         this.stopTimer();
+        const foot = document.getElementById('exam-footer');
+        if (foot) foot.remove();
         const qs = DB[state.subject][state.set];
         let correct = 0;
         qs.forEach((q, i) => { if (state.answers[i] === q.c) correct++; else this.save(q); });
@@ -157,43 +222,51 @@ const app = {
         const score = 650 + Math.round((pct / 100) * 200);
         const level = pct >= 90 ? 5 : pct >= 80 ? 4 : pct >= 60 ? 3 : pct >= 40 ? 2 : 1;
         const labels = ['', 'Does Not Yet Meet Expectations', 'Partially Meets Expectations', 'Approaching Expectations', 'Meets Expectations', 'Exceeds Expectations'];
+        const levelColors = ['', '#c62828', '#e65100', '#f9a825', '#1a7f37', '#003087'];
         const pctRank = Math.min(99, Math.round(pct * 0.92));
         document.getElementById('main-container').innerHTML = `
-        <div class="animate-in" style="text-align:center;max-width:640px;margin:0 auto;">
-            <h2 style="margin-bottom:.5rem;">Assessment Report</h2>
-            <p style="color:var(--text-muted);margin-bottom:1.5rem;">Based on Uniform NJSLA 2025 Standards</p>
-            <div class="result-level">Level ${level}</div>
-            <p style="color:var(--text-muted);margin-bottom:1.5rem;">${labels[level]}</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin:1rem 0;">
-                <div class="card"><p style="color:var(--text-muted);font-size:.8rem;">RAW SCORE</p><p style="font-size:2rem;font-weight:800;">${correct}/${qs.length}</p></div>
-                <div class="card"><p style="color:var(--text-muted);font-size:.8rem;">SCALE SCORE</p><p style="font-size:2rem;font-weight:800;">${score}</p><p style="font-size:.7rem;color:var(--text-muted);">/850</p></div>
-                <div class="card"><p style="color:var(--text-muted);font-size:.8rem;">NJ PERCENTILE</p><p style="font-size:2rem;font-weight:800;">${pctRank}%</p></div>
-            </div>
-            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
-                <button class="btn btn-primary" onclick="app.renderHome()">Home</button>
-                <button class="btn btn-secondary" onclick="app.reviewTest()">Review Answers</button>
-                <button class="btn btn-secondary" onclick="app.showWrongBook()">Mistake Notebook</button>
+        <div class="animate-in">
+            <div class="result-card">
+                <h2 style="color:#003087;margin-bottom:.25rem;">Assessment Complete</h2>
+                <p style="color:#555;font-size:.85rem;margin-bottom:1.5rem;">${subjectNames[state.subject]} · ${Object.keys(DB[state.subject]).indexOf(state.set) + 1 ? `Unit ${Object.keys(DB[state.subject]).indexOf(state.set) + 1}` : ''}</p>
+                <span class="level-badge" style="color:${levelColors[level]}">Performance Level ${level}</span>
+                <p style="color:${levelColors[level]};font-weight:600;margin-bottom:1.5rem;">${labels[level]}</p>
+                <div class="stat-grid">
+                    <div class="stat-box"><div class="label">Correct</div><div class="value">${correct}/${qs.length}</div></div>
+                    <div class="stat-box"><div class="label">Scale Score</div><div class="value">${score}</div><div class="sub">out of 850</div></div>
+                    <div class="stat-box"><div class="label">NJ Percentile</div><div class="value">${pctRank}%</div></div>
+                </div>
+                <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
+                    <button class="btn btn-primary" onclick="app.renderHome()">← Return Home</button>
+                    <button class="btn btn-secondary" onclick="app.reviewTest()">Review Answers</button>
+                    <button class="btn btn-secondary" onclick="app.showWrongBook()">Mistake Notebook</button>
+                </div>
             </div>
         </div>`;
     },
 
     reviewTest() {
+        const foot = document.getElementById('exam-footer');
+        if (foot) foot.remove();
         const qs = DB[state.subject][state.set];
         document.getElementById('main-container').innerHTML = `
         <div class="animate-in">
-            <div class="test-header">
+            <div class="section-header">
                 <h2>Answer Review</h2>
-                <button class="btn btn-secondary" onclick="app.renderHome()">Home</button>
+                <button class="btn btn-secondary" onclick="app.renderHome()">← Home</button>
             </div>
             ${qs.map((q, i) => {
             const chosen = state.answers[i];
             const ok = chosen === q.c;
-            return `<div class="question-box" style="border-left:4px solid ${ok ? 'var(--accent-success)' : 'var(--accent-error)'}">
-                    <p style="font-size:.75rem;color:var(--text-muted);">Q${i + 1} · ${q.tag}</p>
-                    <p style="margin:.5rem 0;font-weight:500;">${q.q}</p>
-                    ${chosen !== undefined ? `<p style="color:${ok ? 'var(--accent-success)' : 'var(--accent-error)'};">Your answer: ${q.a[chosen]} ${ok ? '✓' : '✗'}</p>` : '<p style="color:var(--text-muted);">Not answered</p>'}
-                    ${!ok ? `<p style="color:var(--accent-success);">✓ Correct: ${q.a[q.c]}</p>` : ''}
-                    <p style="font-size:.85rem;color:var(--text-muted);margin-top:.4rem;">${q.exp}</p>
+            return `
+                <div class="question-panel" style="margin-bottom:1rem;border-left:4px solid ${ok ? '#1a7f37' : '#c62828'}">
+                    <div class="question-number">Q${i + 1} · ${q.tag}</div>
+                    <div class="question-text" style="font-size:.95rem;">${q.q}</div>
+                    ${chosen !== undefined
+                    ? `<p style="margin:.5rem 0;color:${ok ? '#1a7f37' : '#c62828'};font-weight:600;">${String.fromCharCode(65 + chosen)}. ${q.a[chosen]} ${ok ? '✓' : '✗'}</p>`
+                    : `<p style="color:#888;font-style:italic;">Not answered</p>`}
+                    ${!ok ? `<p style="color:#1a7f37;font-weight:600;margin-bottom:.4rem;">✓ Correct: ${String.fromCharCode(65 + q.c)}. ${q.a[q.c]}</p>` : ''}
+                    <p style="font-size:.85rem;color:#444;border-top:1px solid #e8ecf1;padding-top:.5rem;margin-top:.5rem;">${q.exp}</p>
                 </div>`;
         }).join('')}
         </div>`;
@@ -207,29 +280,36 @@ const app = {
     },
 
     showWrongBook() {
+        const foot = document.getElementById('exam-footer');
+        if (foot) foot.remove();
+        this.stopTimer();
         document.getElementById('main-container').innerHTML = `
         <div class="animate-in">
-            <div class="test-header">
-                <h2>📓 Mistake Notebook (${state.wrongBook.length})</h2>
-                <button class="btn btn-secondary" onclick="app.renderHome()">Home</button>
+            <div class="section-header">
+                <h2>📓 Mistake Notebook (${state.wrongBook.length} items)</h2>
+                <button class="btn btn-secondary" onclick="app.renderHome()">← Home</button>
             </div>
-            ${state.wrongBook.length === 0 ? '<p style="text-align:center;color:var(--text-muted);margin:3rem 0;">No mistakes yet — great work! 🌟</p>' : ''}
-            ${state.wrongBook.map(q => `
-            <div class="question-box wrong-item">
-                <p style="font-size:.75rem;color:var(--text-muted);">${q.tag}</p>
-                <p style="margin:.5rem 0;">${q.q}</p>
-                <p style="color:var(--accent-success);">✓ ${q.a[q.c]}</p>
-                <p style="font-size:.85rem;color:var(--text-muted);margin-top:.4rem;">${q.exp}</p>
-            </div>`).join('')}
-            ${state.wrongBook.length > 0 ? `<button class="btn btn-secondary" onclick="app.clearWrong()">Clear All</button>` : ''}
+            ${state.wrongBook.length === 0
+                ? `<div class="question-panel" style="text-align:center;color:#555;padding:2rem;">
+                    <p style="font-size:1.5rem;">🌟</p>
+                    <p>No mistakes yet — keep it up!</p>
+                   </div>`
+                : state.wrongBook.map(q => `
+                <div class="question-panel wrong-item" style="margin-bottom:1rem;">
+                    <p style="font-size:.75rem;color:#888;margin-bottom:.4rem;">${q.tag}</p>
+                    <div class="question-text" style="font-size:.95rem;">${q.q}</div>
+                    <p style="color:#1a7f37;font-weight:600;margin:.5rem 0;">✓ ${q.a[q.c]}</p>
+                    <p style="font-size:.85rem;color:#444;border-top:1px solid #e8ecf1;padding-top:.5rem;">${q.exp}</p>
+                </div>`).join('')}
+            ${state.wrongBook.length > 0
+                ? `<button class="btn btn-secondary" style="margin-top:.5rem;" onclick="app.clearWrong()">Clear All Mistakes</button>`
+                : ''}
         </div>`;
     },
 
     clearWrong() {
         if (confirm('Clear all mistakes?')) {
-            state.wrongBook = [];
-            localStorage.removeItem('nj_wrong_book');
-            this.showWrongBook();
+            state.wrongBook = []; localStorage.removeItem('nj_wrong_book'); this.showWrongBook();
         }
     }
 };
